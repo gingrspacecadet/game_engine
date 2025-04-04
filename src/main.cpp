@@ -10,8 +10,12 @@
 wl_compositor* compositor = nullptr;
 xdg_wm_base* wm_base = nullptr;
 wl_shm* shm = nullptr;
+wl_seat* seat = nullptr;
+wl_keyboard* keyboard = nullptr;
+wl_pointer* pointer = nullptr;
 
 bool configured = false;
+bool running = true; // Global flag to control the main loop
 
 void xdg_surface_configure_handler(void* /*data*/, xdg_surface* surface, uint32_t serial) {
     xdg_surface_ack_configure(surface, serial);
@@ -20,6 +24,44 @@ void xdg_surface_configure_handler(void* /*data*/, xdg_surface* surface, uint32_
 
 static const xdg_surface_listener xdgSurfaceListener = {
     .configure = xdg_surface_configure_handler
+};
+
+void handle_key_event(void* data, wl_keyboard* keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
+    std::cout << "Key event: key=" << key << ", state=" << (state == WL_KEYBOARD_KEY_STATE_PRESSED ? "PRESSED" : "RELEASED") << std::endl;
+
+    if (key == 1 && state == WL_KEYBOARD_KEY_STATE_PRESSED) { // ESC key
+        std::cout << "ESC pressed, exiting.\n";
+        running = false;
+    }
+}
+
+void handle_seat_capabilities(void* data, wl_seat* seat, uint32_t caps) {
+    if (caps & WL_SEAT_CAPABILITY_KEYBOARD) {
+        keyboard = wl_seat_get_keyboard(seat);
+        static const wl_keyboard_listener keyboard_listener = {
+            .keymap = [](void*, wl_keyboard*, uint32_t, int, uint32_t) {},
+            .enter = [](void*, wl_keyboard*, uint32_t, wl_surface*, wl_array*) {},
+            .leave = [](void*, wl_keyboard*, uint32_t, wl_surface*) {},
+            .key = handle_key_event,
+            .modifiers = [](void* data, wl_keyboard* wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {},
+            .repeat_info = [](void*, wl_keyboard*, int32_t, int32_t) {} // Added placeholder for repeat_info
+        };
+        wl_keyboard_add_listener(keyboard, &keyboard_listener, nullptr);
+    }
+
+    if (caps & WL_SEAT_CAPABILITY_POINTER) {
+        pointer = wl_seat_get_pointer(seat);
+        // Pointer listener can be added here later
+    }
+}
+
+void handle_seat_name(void* data, wl_seat* seat, const char* name) {
+    std::cout << "Seat name: " << name << std::endl;
+}
+
+static const wl_seat_listener seat_listener = {
+    .capabilities = handle_seat_capabilities,
+    .name = handle_seat_name // Added placeholder for the name event
 };
 
 void registry_handler(void* data, wl_registry* registry, uint32_t id, const char* interface, uint32_t version) {
@@ -32,6 +74,10 @@ void registry_handler(void* data, wl_registry* registry, uint32_t id, const char
     } else if (strcmp(interface, "wl_shm") == 0) {
         shm = static_cast<wl_shm*>(wl_registry_bind(registry, id, &wl_shm_interface, 1));
         std::cout << "Bound wl_shm interface." << std::endl;
+    } else if (strcmp(interface, "wl_seat") == 0) {
+        seat = static_cast<wl_seat*>(wl_registry_bind(registry, id, &wl_seat_interface, version));
+        wl_seat_add_listener(seat, &seat_listener, nullptr);
+        std::cout << "Bound wl_seat interface." << std::endl;
     } else {
         std::cout << "Unknown interface: " << interface << std::endl;
     }
@@ -113,7 +159,10 @@ int main() {
     using clock = std::chrono::high_resolution_clock;
     auto frame_duration = std::chrono::milliseconds(1000 / 60); // 60 FPS
 
-    while (wl_display_dispatch(display) != -1) {
+    while (running) {
+        int ret = wl_display_dispatch(display);
+        if (ret == -1) break;
+
         auto frame_start = clock::now();
 
         std::cout << "Processing Wayland events..." << std::endl;
