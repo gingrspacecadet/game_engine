@@ -20,6 +20,7 @@ public:
     void create_sync_objects();      // Moved to public
     void process_wayland_events();   // Move this method to the public section
     wl_display* get_display() const; // Add this method
+    wl_surface* get_surface() const; // Add method to retrieve the Wayland surface
 
     wl_compositor* waylandCompositor; // Ensure this is accessible
 
@@ -55,4 +56,5 @@ private:
     std::vector<VkFence> inFlightFences;
 
     wl_display* waylandDisplay; // Store Wayland display
+    wl_surface* waylandSurface; // Add member to store the Wayland surface
 };

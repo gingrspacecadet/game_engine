@@ -1,6 +1,7 @@
 #include "engine.hpp"
 #include <iostream> // For debugging/logging
 #include <wayland-client.h> // For Wayland event polling
+#include <unistd.h> // For usleep
 
 Engine::Engine(wl_display* display, wl_surface* surface)
     : vkContext(display, surface) { // Initialize VulkanContext with arguments
@@ -20,20 +21,33 @@ void Engine::initialize() {
     vkContext.create_sync_objects();
 }
 
+void Engine::render_frame() {
+    try {
+        vkContext.draw_frame(); // Render a frame using Vulkan
+    } catch (const std::exception& e) {
+        std::cerr << "[Engine] Error during frame rendering: " << e.what() << "\n";
+        throw;
+    }
+}
+
 void Engine::main_loop() {
     while (true) {
         int dispatchResult = wl_display_dispatch(vkContext.get_display());
         if (dispatchResult == -1) {
-            std::cerr << "[Engine] Wayland event dispatch failed. Exiting main loop.\n";
+            perror("[Engine] Wayland event dispatch failed");
             break;
         }
 
-        try {
-            vkContext.draw_frame();
-        } catch (const std::exception& e) {
-            std::cerr << "[Engine] Error during frame rendering: " << e.what() << "\n";
-            break;
-        }
+        render_frame(); // Render a frame
+
+        // Commit the surface after rendering
+        wl_surface_commit(vkContext.get_surface());
+
+        // Flush the Wayland display to ensure events are sent
+        wl_display_flush(vkContext.get_display());
+
+        // Optional: Sleep to limit frame rate (e.g., ~60fps)
+        usleep(16000);
     }
 }
 

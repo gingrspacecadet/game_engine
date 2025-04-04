@@ -5,8 +5,11 @@ game_engine: \
   CMakeFiles/game_engine.dir/src/main.cpp.o \
   CMakeFiles/game_engine.dir/src/engine.cpp.o \
   CMakeFiles/game_engine.dir/src/platform/vulkan_context.cpp.o \
+  CMakeFiles/game_engine.dir/src/platform/shm_renderer.cpp.o \
   libxdg-shell.a \
-  /usr/lib/gcc/x86_64-pc-linux-gnu/14.2.1/../../../../lib/libwayland-client.so \
+  /usr/lib/libwayland-client.so \
+  /usr/lib/libwayland-cursor.so \
+  /usr/lib/libwayland-egl.so \
   /usr/lib/gcc/x86_64-pc-linux-gnu/14.2.1/../../../../lib/libxkbcommon.so \
   /lib/libvulkan.so \
   /usr/lib/gcc/x86_64-pc-linux-gnu/14.2.1/../../../../lib/libstdc++.so \
@@ -51,9 +54,15 @@ CMakeFiles/game_engine.dir/src/engine.cpp.o:
 
 CMakeFiles/game_engine.dir/src/platform/vulkan_context.cpp.o:
 
+CMakeFiles/game_engine.dir/src/platform/shm_renderer.cpp.o:
+
 libxdg-shell.a:
 
-/usr/lib/gcc/x86_64-pc-linux-gnu/14.2.1/../../../../lib/libwayland-client.so:
+/usr/lib/libwayland-client.so:
+
+/usr/lib/libwayland-cursor.so:
+
+/usr/lib/libwayland-egl.so:
 
 /usr/lib/gcc/x86_64-pc-linux-gnu/14.2.1/../../../../lib/libxkbcommon.so:
 

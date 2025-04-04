@@ -190,6 +190,30 @@ src/main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/game_engine.dir/build.make CMakeFiles/game_engine.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
+src/platform/shm_renderer.o: src/platform/shm_renderer.cpp.o
+.PHONY : src/platform/shm_renderer.o
+
+# target to build an object file
+src/platform/shm_renderer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game_engine.dir/build.make CMakeFiles/game_engine.dir/src/platform/shm_renderer.cpp.o
+.PHONY : src/platform/shm_renderer.cpp.o
+
+src/platform/shm_renderer.i: src/platform/shm_renderer.cpp.i
+.PHONY : src/platform/shm_renderer.i
+
+# target to preprocess a source file
+src/platform/shm_renderer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game_engine.dir/build.make CMakeFiles/game_engine.dir/src/platform/shm_renderer.cpp.i
+.PHONY : src/platform/shm_renderer.cpp.i
+
+src/platform/shm_renderer.s: src/platform/shm_renderer.cpp.s
+.PHONY : src/platform/shm_renderer.s
+
+# target to generate assembly for a file
+src/platform/shm_renderer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game_engine.dir/build.make CMakeFiles/game_engine.dir/src/platform/shm_renderer.cpp.s
+.PHONY : src/platform/shm_renderer.cpp.s
+
 src/platform/vulkan_context.o: src/platform/vulkan_context.cpp.o
 .PHONY : src/platform/vulkan_context.o
 
@@ -254,6 +278,9 @@ help:
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
+	@echo "... src/platform/shm_renderer.o"
+	@echo "... src/platform/shm_renderer.i"
+	@echo "... src/platform/shm_renderer.s"
 	@echo "... src/platform/vulkan_context.o"
 	@echo "... src/platform/vulkan_context.i"
 	@echo "... src/platform/vulkan_context.s"

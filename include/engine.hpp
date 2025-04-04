@@ -11,4 +11,5 @@ public:
 private:
     void initialize(); // Add initialize method declaration
     void main_loop();  // Add main_loop method declaration
+    void render_frame(); // Add render_frame method declaration
 };

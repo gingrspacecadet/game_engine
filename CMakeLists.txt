@@ -45,15 +45,17 @@ add_executable(game_engine
     src/main.cpp
     src/engine.cpp
     src/platform/vulkan_context.cpp
+    src/platform/shm_renderer.cpp
 )
 
 # Include directories
-target_include_directories(game_engine PRIVATE include)
+include_directories(${WAYLAND_INCLUDE_DIRS})
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # Link required libraries
 target_link_libraries(game_engine PRIVATE
     xdg-shell
-    wayland-client
+    ${WAYLAND_LIBRARIES}
     xkbcommon
     ${Vulkan_LIBRARIES}
 )

@@ -22,7 +22,7 @@ static const wl_registry_listener registry_listener = {
 };
 
 VulkanContext::VulkanContext(wl_display* display, wl_surface* surface)
-    : waylandDisplay(display), waylandCompositor(nullptr) {
+    : waylandDisplay(display), waylandSurface(surface), waylandCompositor(nullptr) {
     wl_registry* registry = wl_display_get_registry(display);
     wl_registry_add_listener(registry, &registry_listener, this);
     wl_display_roundtrip(display); // Ensure the registry is processed
@@ -108,7 +108,9 @@ void VulkanContext::init_instance() {
 
 void VulkanContext::create_surface(wl_display* display, wl_surface* surface) {
     if (vkSurface) {
-        throw std::runtime_error("Surface already has a Vulkan sync object attached!");
+        std::cerr << "[VulkanContext] Detaching previous Vulkan sync object from surface." << std::endl;
+        vkDestroySurfaceKHR(instance, vkSurface, nullptr);
+        vkSurface = VK_NULL_HANDLE;
     }
 
     VkWaylandSurfaceCreateInfoKHR surfaceCreateInfo{};
@@ -421,6 +423,10 @@ void VulkanContext::draw_frame() {
 
 wl_display* VulkanContext::get_display() const {
     return waylandDisplay; // Return the stored Wayland display
+}
+
+wl_surface* VulkanContext::get_surface() const {
+    return waylandSurface; // Return the stored Wayland surface
 }
 
 void VulkanContext::process_wayland_events() {

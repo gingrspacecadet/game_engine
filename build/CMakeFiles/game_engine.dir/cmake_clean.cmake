@@ -4,6 +4,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/game_engine.dir/src/engine.cpp.o.d"
   "CMakeFiles/game_engine.dir/src/main.cpp.o"
   "CMakeFiles/game_engine.dir/src/main.cpp.o.d"
+  "CMakeFiles/game_engine.dir/src/platform/shm_renderer.cpp.o"
+  "CMakeFiles/game_engine.dir/src/platform/shm_renderer.cpp.o.d"
   "CMakeFiles/game_engine.dir/src/platform/vulkan_context.cpp.o"
   "CMakeFiles/game_engine.dir/src/platform/vulkan_context.cpp.o.d"
   "game_engine"
