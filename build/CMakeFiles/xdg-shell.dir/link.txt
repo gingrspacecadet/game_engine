@@ -1,0 +1,2 @@
+/usr/bin/ar qc libxdg-shell.a "CMakeFiles/xdg-shell.dir/src/protocols/xdg-shell-client-protocol.c.o"
+/usr/bin/ranlib libxdg-shell.a

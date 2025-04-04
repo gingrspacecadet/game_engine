@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/gngr/projects/game_engine/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
