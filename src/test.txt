@@ -1,13 +1,12 @@
 #include <wayland-client.h>
 #include "protocols/xdg-shell-client-protocol.h"
 #include <iostream>
-#include <cstring>
+#include <cstring> // For strcmp
 #include <unistd.h>
-#include "platform/shm_renderer.hpp"
-#include <chrono>
+#include "platform/shm_renderer.hpp" // Include ShmRenderer header
+#include <chrono> // For frame timing
 #include <bits/this_thread_sleep.h>
 
-// Global variables for Wayland objects
 wl_compositor* compositor = nullptr;
 xdg_wm_base* wm_base = nullptr;
 wl_shm* shm = nullptr;
@@ -16,7 +15,7 @@ wl_keyboard* keyboard = nullptr;
 wl_pointer* pointer = nullptr;
 
 bool configured = false;
-bool running = true;
+bool running = true; // Global flag to control the main loop
 
 void xdg_surface_configure_handler(void* /*data*/, xdg_surface* surface, uint32_t serial) {
     xdg_surface_ack_configure(surface, serial);
@@ -30,10 +29,34 @@ static const xdg_surface_listener xdgSurfaceListener = {
 void handle_key_event(void* data, wl_keyboard* keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
     std::cout << "Key event: key=" << key << ", state=" << (state == WL_KEYBOARD_KEY_STATE_PRESSED ? "PRESSED" : "RELEASED") << std::endl;
 
-    if (key == 1 && state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+    if (key == 1 && state == WL_KEYBOARD_KEY_STATE_PRESSED) { // ESC key
         std::cout << "ESC pressed, exiting.\n";
         running = false;
     }
+}
+
+void handle_pointer_motion(void* data, wl_pointer* pointer, uint32_t time, wl_fixed_t x, wl_fixed_t y) {
+    std::cout << "Mouse moved: (" << wl_fixed_to_double(x) << ", " << wl_fixed_to_double(y) << ")\n";
+}
+
+void handle_pointer_button(void* data, wl_pointer* pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
+    std::cout << "Mouse button " << button << (state == WL_POINTER_BUTTON_STATE_PRESSED ? " pressed\n" : " released\n");
+}
+
+void handle_pointer_axis(void* data, wl_pointer* pointer, uint32_t time, uint32_t axis, wl_fixed_t value) {
+    std::cout << "Mouse scrolled: axis=" << axis << ", value=" << wl_fixed_to_double(value) << "\n";
+}
+
+void handle_pointer_axis_discrete(void* data, wl_pointer* pointer, uint32_t axis, int32_t discrete) {
+    std::cout << "Mouse discrete scroll: axis=" << axis << ", discrete=" << discrete << "\n";
+}
+
+void handle_pointer_axis_source(void* data, wl_pointer* pointer, uint32_t axis_source) {
+    std::cout << "Pointer axis source: " << axis_source << "\n";
+}
+
+void handle_pointer_axis_stop(void* data, wl_pointer* pointer, uint32_t time, uint32_t axis) {
+    std::cout << "Pointer axis stop: axis=" << axis << ", time=" << time << "\n";
 }
 
 static const wl_pointer_listener pointer_listener = {
@@ -46,7 +69,7 @@ static const wl_pointer_listener pointer_listener = {
     .motion = [](void* data, wl_pointer* pointer, uint32_t time, wl_fixed_t x, wl_fixed_t y) {
         std::cout << "[DEBUG] Pointer motion event: time=" << time << ", x=" << wl_fixed_to_double(x) << ", y=" << wl_fixed_to_double(y) << std::endl;
     },
-    .button = [](void*data, wl_pointer* pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
+    .button = [](void* data, wl_pointer* pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
         std::cout << "[DEBUG] Pointer button event: serial=" << serial << ", time=" << time << ", button=" << button << ", state=" << state << std::endl;
     },
     .axis = [](void* data, wl_pointer* pointer, uint32_t time, uint32_t axis, wl_fixed_t value) {
@@ -82,7 +105,7 @@ void handle_seat_capabilities(void* data, wl_seat* seat, uint32_t caps) {
             .enter = [](void*, wl_keyboard*, uint32_t, wl_surface*, wl_array*) {},
             .leave = [](void*, wl_keyboard*, uint32_t, wl_surface*) {},
             .key = handle_key_event,
-            .modifiers = [](void*, wl_keyboard*, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t) {},
+            .modifiers = [](void*, wl_keyboard*, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t) {}, // Added the missing `group` parameter
             .repeat_info = [](void*, wl_keyboard*, int32_t, int32_t) {}
         };
         wl_keyboard_add_listener(keyboard, &keyboard_listener, nullptr);
@@ -92,7 +115,12 @@ void handle_seat_capabilities(void* data, wl_seat* seat, uint32_t caps) {
         std::cout << "[DEBUG] Pointer capability detected." << std::endl;
         pointer = wl_seat_get_pointer(seat);
         if (pointer) {
-            wl_pointer_add_listener(pointer, &pointer_listener, nullptr); // Add listener here
+            std::cout << "[DEBUG] Checking pointer_listener.axis field before adding listener." << std::endl;
+            if (!pointer_listener.axis) {
+                std::cerr << "[ERROR] pointer_listener.axis is null!" << std::endl;
+            }
+            std::cout << "[DEBUG] Adding pointer listener." << std::endl;
+            wl_pointer_add_listener(pointer, &pointer_listener, nullptr);
         } else {
             std::cerr << "[ERROR] Failed to get pointer from seat." << std::endl;
         }
@@ -105,7 +133,7 @@ void handle_seat_name(void* data, wl_seat* seat, const char* name) {
 
 static const wl_seat_listener seat_listener = {
     .capabilities = handle_seat_capabilities,
-    .name = handle_seat_name
+    .name = handle_seat_name // Added placeholder for the name event
 };
 
 void registry_handler(void* data, wl_registry* registry, uint32_t id, const char* interface, uint32_t version) {
@@ -140,7 +168,7 @@ int main() {
 
     wl_registry* registry = wl_display_get_registry(display);
     std::cout << "Obtained Wayland registry." << std::endl;
-    static const wl_registry_listener registryListener = { registry_handler, registry_remover };
+    static const wl_registry_listener registryListener = {registry_handler, registry_remover};
     wl_registry_add_listener(registry, &registryListener, nullptr);
     wl_display_roundtrip(display);
     std::cout << "Completed Wayland roundtrip." << std::endl;
@@ -182,12 +210,13 @@ int main() {
 
     // Create SHM renderer for basic background
     ShmRenderer shmRenderer(display, surface);
-    shmRenderer.draw_background(0xFF0000FF);
+    shmRenderer.draw_background(0xFF0000FF); // Draw a blue background
 
     wl_surface_commit(surface);
     wl_display_flush(display);
     std::cout << "Committed Wayland surface." << std::endl;
 
+    // Wait for configure
     while (!configured) {
         std::cout << "Waiting for configure event..." << std::endl;
         wl_display_dispatch(display);
@@ -198,8 +227,9 @@ int main() {
     wl_display_flush(display);
     std::cout << "Re-committed Wayland surface after configure and flushed display." << std::endl;
 
+    // Main loop
     using clock = std::chrono::high_resolution_clock;
-    auto frame_duration = std::chrono::milliseconds(1000 / 60);
+    auto frame_duration = std::chrono::milliseconds(1000 / 60); // 60 FPS
 
     while (running) {
         int ret = wl_display_dispatch(display);
@@ -207,7 +237,7 @@ int main() {
 
         auto frame_start = clock::now();
 
-        shmRenderer.draw_background(0xFF0000FF);
+        shmRenderer.draw_background(0xFF0000FF); // Keep drawing the background
         wl_surface_commit(surface);
         wl_display_flush(display);
 
